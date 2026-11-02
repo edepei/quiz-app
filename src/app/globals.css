@@ -1,0 +1,300 @@
+:root {
+  --bg: #f4f6fb;
+  --card: #ffffff;
+  --text: #1d2433;
+  --muted: #5b6475;
+  --border: #d7dce6;
+  --primary: #2f5bd3;
+  --primary-text: #ffffff;
+  --selected-bg: #e8eefc;
+  --right: #1f7a46;
+  --right-bg: #e7f5ec;
+  --wrong: #b3261e;
+  --wrong-bg: #fbeaea;
+  --notice-bg: #fff6e0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+  font-size: 17px;
+  line-height: 1.6;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.container {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px 24px;
+}
+
+h1 {
+  margin: 0 0 12px;
+  font-size: 1.6rem;
+}
+
+p {
+  margin: 0 0 12px;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.center {
+  text-align: center;
+}
+
+.big {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 16px 0;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 22px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card);
+  color: var(--text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.button.primary {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-text);
+}
+
+.button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.file-button {
+  position: relative;
+  margin-top: 12px;
+}
+
+.file-button input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.file-button:focus-within {
+  outline: 3px solid #9db4f0;
+  outline-offset: 2px;
+}
+
+.error {
+  margin-top: 20px;
+  padding: 16px;
+  border-radius: 10px;
+  background: var(--wrong-bg);
+  color: var(--wrong);
+}
+
+.error ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.notice {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: var(--notice-bg);
+}
+
+.progress {
+  margin: 0 0 6px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.progress-bar {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--border);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.progress-bar div {
+  height: 100%;
+  background: var(--primary);
+}
+
+.question {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0 0 16px;
+}
+
+.options {
+  display: grid;
+  gap: 10px;
+}
+
+.option {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  min-height: 56px;
+  padding: 14px 16px;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  background: var(--card);
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.option.selected {
+  border-color: var(--primary);
+  background: var(--selected-bg);
+}
+
+.option-num {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.option.selected .option-num {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-text);
+}
+
+.nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.nav .button {
+  flex: 1;
+}
+
+.score {
+  text-align: center;
+  font-size: 1.4rem;
+  margin: 8px 0 4px;
+}
+
+.score strong {
+  font-size: 3rem;
+  color: var(--primary);
+}
+
+.results {
+  list-style: none;
+  padding: 0;
+  margin: 24px 0 0;
+  display: grid;
+  gap: 14px;
+}
+
+.results li {
+  border: 1px solid var(--border);
+  border-left-width: 6px;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.results li.right {
+  border-left-color: var(--right);
+}
+
+.results li.wrong {
+  border-left-color: var(--wrong);
+}
+
+.result-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 700;
+}
+
+.badge {
+  padding: 2px 12px;
+  border-radius: 999px;
+  font-size: 0.9rem;
+}
+
+.right .badge {
+  background: var(--right-bg);
+  color: var(--right);
+}
+
+.wrong .badge {
+  background: var(--wrong-bg);
+  color: var(--wrong);
+}
+
+.results .question {
+  font-size: 1.05rem;
+  margin-bottom: 10px;
+}
+
+.results dl {
+  margin: 0;
+}
+
+.results dt {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin-top: 8px;
+}
+
+.results dd {
+  margin: 0;
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 12px 12px 32px;
+  }
+
+  .card {
+    padding: 20px 16px;
+  }
+
+  h1 {
+    font-size: 1.4rem;
+  }
+}
