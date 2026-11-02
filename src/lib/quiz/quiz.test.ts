@@ -75,6 +75,7 @@ describe("loadQuestionPapers", () => {
     const { papers, invalid } = await loadQuestionPapers();
     expect(invalid).toEqual([]);
     expect(papers.map((p) => [p.id, p.title, p.questions.length])).toEqual([
+      ["high-school-questions.json", "고등학교 정보과목", 10],
       ["sample-questions.json", "중학교 정보과목", 10],
     ]);
   });
