@@ -6,6 +6,19 @@ export type Question = {
   explanation: string;
 };
 
+/** question-papers 폴더의 문제지 파일 하나. id는 파일 이름입니다. */
+export type QuestionPaper = {
+  id: string;
+  title: string;
+  questions: Question[];
+};
+
+/** 형식이 맞지 않아 목록에서 뺀 문제지 파일 */
+export type InvalidPaper = {
+  fileName: string;
+  errors: string[];
+};
+
 /** 이용자가 고른 답. 인덱스는 문항 순서, 값은 1~4 또는 아직 고르지 않음(null). */
 export type Answers = (number | null)[];
 

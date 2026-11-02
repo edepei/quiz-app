@@ -3,13 +3,13 @@ import type { GradeResult, Question } from "@/lib/quiz/types";
 type Props = {
   result: GradeResult;
   onRetry: () => void;
-  onNewFile: () => void;
+  onBackToList: () => void;
 };
 
 const answerText = (q: Question, num: number | null) =>
   num === null ? "답하지 않음" : `${num}번. ${q.options[num - 1]}`;
 
-export default function ResultStep({ result, onRetry, onNewFile }: Props) {
+export default function ResultStep({ result, onRetry, onBackToList }: Props) {
   return (
     <section className="card">
       <h1>결과</h1>
@@ -44,8 +44,8 @@ export default function ResultStep({ result, onRetry, onNewFile }: Props) {
         <button type="button" className="button" onClick={onRetry}>
           다시 풀기
         </button>
-        <button type="button" className="button primary" onClick={onNewFile}>
-          새 파일 올리기
+        <button type="button" className="button primary" onClick={onBackToList}>
+          문제지 목록으로
         </button>
       </div>
     </section>

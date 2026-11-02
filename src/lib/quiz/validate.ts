@@ -1,40 +1,48 @@
 import type { Question } from "./types";
 
 export type ValidateResult =
-  | { ok: true; questions: Question[] }
+  | { ok: true; title: string; questions: Question[] }
   | { ok: false; errors: string[] };
 
 const isNonEmptyString = (v: unknown): v is string =>
   typeof v === "string" && v.trim() !== "";
 
 /**
- * 업로드한 파일의 글자 내용을 검사합니다.
- * 하나라도 잘못된 문항이 있으면 파일 전체를 받지 않고, 이유를 쉬운 말로 모두 돌려줍니다.
+ * 문제지 파일의 글자 내용을 검사합니다.
+ * 하나라도 잘못된 곳이 있으면 파일 전체를 쓰지 않고, 이유를 쉬운 말로 모두 돌려줍니다.
  */
-export function validateQuizText(text: string): ValidateResult {
+export function validatePaperText(text: string): ValidateResult {
   let data: unknown;
   try {
     data = JSON.parse(text);
   } catch {
     return {
       ok: false,
-      errors: ["문제 파일의 형식을 읽을 수 없습니다. 올바른 JSON 문제 파일인지 확인해 주세요."],
+      errors: ["문제지 파일의 형식을 읽을 수 없습니다. 올바른 JSON 파일인지 확인해 주세요."],
     };
   }
 
-  if (typeof data !== "object" || data === null || !Array.isArray((data as { questions?: unknown }).questions)) {
-    return {
-      ok: false,
-      errors: ["문제 파일에 문제 목록(questions)이 없습니다. 파일 맨 위에 questions 목록이 있어야 합니다."],
-    };
+  if (typeof data !== "object" || data === null || Array.isArray(data)) {
+    return { ok: false, errors: ["문제지 파일의 형식을 읽을 수 없습니다. 올바른 JSON 파일인지 확인해 주세요."] };
   }
-
-  const raw = (data as { questions: unknown[] }).questions;
-  if (raw.length === 0) {
-    return { ok: false, errors: ["문제 파일에 문항이 하나도 없습니다."] };
-  }
+  const root = data as { title?: unknown; questions?: unknown };
 
   const errors: string[] = [];
+  if (!isNonEmptyString(root.title)) {
+    errors.push("문제지 제목(title)이 없습니다.");
+  }
+
+  if (!Array.isArray(root.questions)) {
+    errors.push("문제 목록(questions)이 없습니다. 파일 맨 위에 questions 목록이 있어야 합니다.");
+    return { ok: false, errors };
+  }
+
+  const raw: unknown[] = root.questions;
+  if (raw.length === 0) {
+    errors.push("문제지에 문항이 하나도 없습니다.");
+    return { ok: false, errors };
+  }
+
   raw.forEach((item, i) => {
     const n = i + 1;
     if (typeof item !== "object" || item === null) {
@@ -76,5 +84,5 @@ export function validateQuizText(text: string): ValidateResult {
       explanation: q.explanation,
     };
   });
-  return { ok: true, questions };
+  return { ok: true, title: root.title as string, questions };
 }

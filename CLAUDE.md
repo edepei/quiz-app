@@ -5,9 +5,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## 프로젝트 현황
 
 - 문제풀이 교육용 웹앱입니다. 요구사항의 기준 문서는 [PRD.md](PRD.md)입니다.
-- 1일차 앱(업로드 → 문항 확인 → 풀이 → 결과)이 만들어져 있습니다. 로컬 Git 저장소(`main`)만 있고, 원격 저장소와 Vercel 연결은 없습니다.
+- 1일차 앱이 만들어져 있습니다. 현재 버전은 **문제지 목록 선택** 방식입니다(목록 → 문항 확인 → 풀이 → 결과). 학생이 파일을 올리던 초기 버전은 더 이상 쓰지 않습니다(PRD.md 7절 버전 기록).
+- 로컬 Git 저장소(`main`)만 있고, 원격 저장소와 Vercel 연결은 없습니다.
 - **배포는 사용자가 따로 "배포해달라"고 요청할 때만 합니다.** 그 전에는 `vercel` 등 배포 도구를 실행하거나 임시·공개 주소를 만들지 않고, GitHub에 push하지 않습니다.
-- `sample-questions.json`은 형식 참고·테스트용입니다. 앱 코드나 `public/`에 넣거나 자동으로 불러오지 않습니다.
+- 문제지는 `question-papers/` 폴더의 JSON 파일입니다. 현재 `sample-questions.json`(제목 "중학교 정보과목", 10문항) 하나뿐입니다. 사용자가 요청하지 않는 한 문제지나 문항을 새로 만들거나 내용을 고치지 않습니다. 여러 문제지 동작은 자동 점검에서 시스템 임시 폴더로만 확인합니다.
 - 작업 폴더가 OneDrive 동기화 폴더(`바탕 화면`) 안에 있습니다. 설치 중 파일 잠김 오류(`EPERM`, `EBUSY`)가 나면 이 점부터 의심합니다.
 
 ## 명령 (2026-11-02 실제로 확인함)
@@ -18,23 +19,25 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 코드 구조
 
-- `src/lib/quiz/`: 화면과 분리된 핵심 로직. `validate.ts`(업로드 글자 → 문항 목록 또는 쉬운 한국어 오류 목록), `grade.ts`(점수·정오 계산), `types.ts`. 2일차에 문제 출처(AI·Firestore)가 바뀌어도 이 로직을 그대로 다시 씁니다.
-- `src/app/page.tsx`: 단계(`upload` → `ready` → `solving` → `result`)와 문항·고른 답을 들고 있는 단일 화면. 저장소를 쓰지 않으므로 새로고침하면 처음부터 시작합니다.
-- `src/components/quiz/`: 단계별 화면(`UploadStep`, `ReadyStep`, `QuestionStep`, `ResultStep`). `QuestionStep`은 정답·해설을 표시하지 않고, 채점은 `ResultStep`으로 넘어갈 때 한 번만 합니다.
+- `src/lib/quiz/`: 화면과 분리된 핵심 로직. `papers.ts`(`question-papers` 폴더의 `.json`을 파일 이름 순으로 읽어 문제지 목록과 형식 오류 목록을 돌려줌), `validate.ts`(문제지 글자 → 제목·문항 또는 쉬운 한국어 오류 목록), `grade.ts`(점수·정오 계산), `types.ts`. 2일차에 문제 출처(AI·Firestore)가 바뀌어도 검사·채점 로직을 그대로 다시 씁니다.
+- `src/app/page.tsx`: 서버에서 문제지를 읽어 `QuizApp`에 넘깁니다. 홈은 빌드할 때 고정 페이지로 만들어지므로, 문제지 파일을 바꾸면 개발 서버는 새로고침, 배포본은 다시 빌드해야 반영됩니다. (`papers.ts`의 `turbopackIgnore` 표시는 빌드 경고를 막기 위한 것)
+- `src/components/quiz/QuizApp.tsx`: 단계(`list` → `ready` → `solving` → `result`)와 고른 문제지·답을 들고 있는 화면. 저장소를 쓰지 않으므로 새로고침하면 목록부터 시작합니다.
+- `src/components/quiz/`의 단계별 화면: `PaperListStep`, `ReadyStep`, `QuestionStep`, `ResultStep`. `QuestionStep`은 정답·해설을 표시하지 않고, 채점은 `ResultStep`으로 넘어갈 때 한 번만 합니다.
 - 스타일은 `src/app/globals.css` 하나에 직접 작성합니다(추가 디자인 도구 없음).
 
 ## 요구사항 요약 (자세한 내용은 PRD.md)
 
 - 기술 구성: Next.js + TypeScript, Vercel 배포, PC·휴대폰 반응형 화면
-- 흐름: 문제 파일 업로드 → 문항 확인 → 한 문제씩 풀이 → 모든 문항 완료 → 최종 채점 → 점수·문항별 정오·해설 확인
-- 문제 파일: JSON 파일의 최상위 `questions` 배열. 문항마다 `question`, `options`(4개), `correctAnswer`(1~4, 1이 첫 번째 보기), `explanation`이 있습니다.
-- 풀이 중에는 정답 여부·점수·해설을 보여주지 않습니다.
+- 흐름: 문제지 목록 → 문제지 선택 → 문항 확인 → 한 문제씩 풀이 → 모든 문항 완료 → 최종 채점 → 점수·문항별 정오·해설 확인
+- 문제지 파일: `question-papers/*.json`. 최상위에 `title`(목록에 표시, `questions` 앞에 작성)과 `questions` 배열. 문항마다 `question`, `options`(4개), `correctAnswer`(1~4, 1이 첫 번째 보기), `explanation`이 있습니다.
+- 목록 제목은 화면에 고정하지 않고 각 파일의 `title`에서 읽습니다. 학생에게 파일 업로드를 요구하지 않습니다.
+- 풀이 중에는 정답 여부·점수·해설을 보여주지 않습니다. 정답을 숨기는 별도 보호 기능은 두지 않습니다.
 - 점수: `정답 수 ÷ 전체 문항 수 × 100`, 소수 첫째 자리까지 반올림합니다.
-- 세부 결정 사항(잘못된 파일 처리, 이전/다음 이동, 결과 화면 구성 등)은 PRD.md 4.4절을 따릅니다.
+- 세부 결정 사항(잘못된 문제지 처리, 이전/다음 이동, 결과 화면 구성 등)은 PRD.md 4.5절을 따릅니다.
 
 ### 지금 만들 기능과 나중에 추가할 기능
 
-- **1일차 (지금 범위)**: JSON 파일 업로드, 문항 표시, 4지선다 풀이, 완료 후 채점·점수·정오·해설 표시, 로컬 실행, Vercel 배포
+- **1일차 (지금 범위)**: `question-papers` 문제지 목록 표시·선택, 문항 표시, 4지선다 풀이, 완료 후 채점·점수·정오·해설 표시, 로컬 실행, Vercel 배포(요청 시)
 - **1일차에 만들지 않는 것**: 로그인, AI 문제 생성, DB 저장
 - **2일차 (나중 범위)**: 교사 Google 로그인과 학생 이름 기반 게스트 입장, 학습자료 업로드와 Azure AI 문제 생성, 생성 문제 저장·공개와 학생 문제 목록, 풀이 결과 Firestore 저장, 교사의 학생별 점수·오답·평균 조회
 - 1일차 코드는 2일차 기능을 붙이기 쉽게 구성하되, 2일차 기능을 미리 만들지 않습니다.

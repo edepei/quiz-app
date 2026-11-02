@@ -91,21 +91,44 @@ p {
   cursor: not-allowed;
 }
 
-.file-button {
-  position: relative;
-  margin-top: 12px;
+.paper-list {
+  list-style: none;
+  padding: 0;
+  margin: 16px 0 0;
+  display: grid;
+  gap: 10px;
 }
 
-.file-button input {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
+.paper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 64px;
+  padding: 14px 18px;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  background: var(--card);
+  color: var(--text);
+  font: inherit;
+  text-align: left;
   cursor: pointer;
 }
 
-.file-button:focus-within {
-  outline: 3px solid #9db4f0;
-  outline-offset: 2px;
+.paper:hover,
+.paper:focus-visible {
+  border-color: var(--primary);
+  background: var(--selected-bg);
+}
+
+.paper-title {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.paper .muted {
+  flex: none;
 }
 
 .error {
