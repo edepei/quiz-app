@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import type { Question } from "@/lib/quiz/types";
 import { validatePaperText } from "@/lib/quiz/validate";
 import { errorMessages, teacherFetch, type GetToken } from "./api";
+import PaperPreview from "./PaperPreview";
 
 type Preview = { fileName: string; text: string; title: string; questions: Question[] };
 
@@ -97,22 +98,7 @@ export default function PaperUpload({ getToken, onSaved }: Props) {
           <p>
             <strong>{preview.title}</strong> · {preview.questions.length}문항
           </p>
-          <ol className="preview-list">
-            {preview.questions.map((q, i) => (
-              <li key={i}>
-                <p className="question">{q.question}</p>
-                <ol className="preview-options">
-                  {q.options.map((opt, j) => (
-                    <li key={j} className={j + 1 === q.correctAnswer ? "answer" : undefined}>
-                      {opt}
-                      {j + 1 === q.correctAnswer && " (정답)"}
-                    </li>
-                  ))}
-                </ol>
-                <p className="muted small">해설: {q.explanation}</p>
-              </li>
-            ))}
-          </ol>
+          <PaperPreview questions={preview.questions} />
           <div className="nav">
             <button type="button" className="button" onClick={reset} disabled={saving}>
               취소

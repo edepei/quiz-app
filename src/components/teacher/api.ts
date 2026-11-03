@@ -13,7 +13,12 @@ export async function teacherFetch<T>(getToken: GetToken, url: string, init: Req
     res = await fetch(url, {
       ...init,
       cache: "no-store",
-      headers: { ...init.headers, "content-type": "application/json", Authorization: `Bearer ${await getToken()}` },
+      // 파일(FormData)을 보낼 때는 브라우저가 형식 머리말을 직접 붙이도록 둡니다.
+      headers: {
+        ...init.headers,
+        ...(init.body instanceof FormData ? {} : { "content-type": "application/json" }),
+        Authorization: `Bearer ${await getToken()}`,
+      },
     });
   } catch {
     throw new TeacherApiError(["인터넷 연결을 확인하고 다시 시도해 주세요."]);

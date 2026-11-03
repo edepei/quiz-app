@@ -9,10 +9,13 @@ const sha256 = (text: string) => createHash("sha256").update(text).digest("hex")
 
 export const MAX_NAME_LENGTH = 30;
 
+/** 제목 중복 확인용 열쇠. 공백·대소문자를 무시합니다. */
+export const titleKey = (title: string) => title.trim().replace(/\s+/g, " ").toLowerCase();
+
 /** 중복 확인용 열쇠. 제목은 공백·대소문자를 무시하고, 내용은 문항 전체가 같은지 봅니다. */
 export function paperKeys(title: string, questions: Question[]) {
   return {
-    titleKey: title.trim().replace(/\s+/g, " ").toLowerCase(),
+    titleKey: titleKey(title),
     contentHash: sha256(JSON.stringify(questions)),
   };
 }

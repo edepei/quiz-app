@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { GET as getPapers, POST as postPaper } from "./teacher/papers/route";
 import { PATCH as patchPaper } from "./teacher/papers/[id]/route";
 import { GET as getResults } from "./teacher/papers/[id]/results/route";
+import { POST as generate } from "./teacher/generate/route";
 
 // 교사 기능 서버 창구는 화면과 상관없이 로그인 증명이 없거나 가짜면 Firestore에 닿기 전에 거절합니다.
 const saved = { ...process.env };
@@ -31,6 +32,7 @@ describe("교사 기능 서버 창구", () => {
       expect((await postPaper(req("POST", auth))).status).toBe(401);
       expect((await patchPaper(req("PATCH", auth), params)).status).toBe(401);
       expect((await getResults(req("GET", auth), params)).status).toBe(401);
+      expect((await generate(req("POST", auth))).status).toBe(401);
     });
   }
 });

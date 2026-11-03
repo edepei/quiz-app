@@ -16,6 +16,7 @@ type PaperDoc = {
   questionCount: number;
   published: boolean;
   fileName: string;
+  source?: "json" | "pdf-ai";
   createdAt: Timestamp;
   updatedAt: Timestamp;
 };
@@ -46,10 +47,10 @@ export async function listPapersForTeacher(db: Firestore): Promise<TeacherPaperR
 
 export type CreatePaperResult = { ok: true; id: string } | { ok: false; reason: "duplicate-title" | "duplicate-content"; title: string };
 
-/** 제목이나 내용이 같은 문제지가 이미 있으면 저장하지 않습니다. 새 문제지는 비공개로 저장합니다. */
+/** 제목이나 내용이 같은 문제지가 이미 있으면 저장하지 않습니다. JSON 업로드는 비공개, AI 생성본은 바로 공개로 저장합니다. */
 export async function createPaper(
   db: Firestore,
-  input: { title: string; questions: Question[]; fileName: string },
+  input: { title: string; questions: Question[]; fileName: string; published?: boolean; source?: "json" | "pdf-ai" },
 ): Promise<CreatePaperResult> {
   const { titleKey, contentHash } = paperKeys(input.title, input.questions);
   const papers = db.collection(PAPERS);
@@ -67,8 +68,9 @@ export async function createPaper(
       contentHash,
       questions: input.questions,
       questionCount: input.questions.length,
-      published: false,
+      published: input.published ?? false,
       fileName: input.fileName,
+      source: input.source ?? "json",
       createdAt: FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp(),
     });

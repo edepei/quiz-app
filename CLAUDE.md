@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## 프로젝트 현황
 
 - 문제풀이 교육용 웹앱입니다. 요구사항의 기준 문서는 [PRD.md](PRD.md)입니다.
-- 1일차 앱이 만들어져 있고, 2일차 1단계로 **교사·학생 화면을 나눴습니다**(2026-11-03, PRD.md 5.2절). 첫 화면(`/`)에서 역할을 고르고, 학생(`/student`)은 이름 입력 → 공개된 문제지 목록 → 문항 확인 → 풀이 → 결과, 교사(`/teacher`)는 **Firebase Google 로그인**(허용 계정 1개) 뒤 문제지 등록·공개·결과 조회를 합니다. 3단계로 **Firestore 저장**을 붙였습니다(PRD.md 5.2절 3단계). 학생이 파일을 올리던 초기 버전은 더 이상 쓰지 않습니다(PRD.md 7절 버전 기록).
+- 1일차 앱이 만들어져 있고, 2일차 1단계로 **교사·학생 화면을 나눴습니다**(2026-11-03, PRD.md 5.2절). 첫 화면(`/`)에서 역할을 고르고, 학생(`/student`)은 이름 입력 → 공개된 문제지 목록 → 문항 확인 → 풀이 → 결과, 교사(`/teacher`)는 **Firebase Google 로그인**(허용 계정 1개) 뒤 문제지 등록·공개·결과 조회를 합니다. 3단계로 **Firestore 저장**을 붙였습니다(PRD.md 5.2절 3단계). 4단계로 **PDF 학습자료 → Azure AI 문제 생성**을 붙였습니다(PRD.md 5.2절 4단계, 2026-11-03). 학생이 파일을 올리던 초기 버전은 더 이상 쓰지 않습니다(PRD.md 7절 버전 기록).
 - Git 저장소(`main`)는 GitHub 원격 저장소 `origin`(https://github.com/edepei/quiz-app)과 연결돼 있습니다.
 - Vercel 프로젝트 `quiz-app`(계정 `sohyunpei-4935`, 무료 요금제)에 연결돼 있고(`.vercel/`, Git 제외), 정식 주소는 https://quiz-app-ruddy-delta-94.vercel.app 입니다(2026-11-03 첫 배포). Vercel 프로젝트가 GitHub 저장소와 연결돼 있어(2026-11-03), **`main`에 push하면 정식 주소로 자동 배포됩니다.**
 - **배포와 GitHub push는 사용자가 따로 요청할 때만 합니다.** push가 곧 배포이므로 push 전에 `npm test`와 `npm run build`를 확인합니다. 그 전에는 `vercel` 등 배포 도구를 실행하거나 임시·공개 주소를 만들지 않습니다.
@@ -13,6 +13,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Firebase 프로젝트 `quiz-app-5e205`(표시 이름 quiz-app, 무료 요금제, 웹 앱 `quiz-app-web`). Authentication의 Google 로그인 사용 설정됨. 로그인 허용 도메인: localhost, `quiz-app-5e205.firebaseapp.com`, `quiz-app-5e205.web.app`, `quiz-app-ruddy-delta-94.vercel.app`(2026-11-03 추가). 콘솔에 같은 이름 "quiz-app"의 다른 프로젝트 `quiz-app-ec52e`가 있지만 이 앱은 쓰지 않습니다. Firebase MCP 도구의 현재 프로젝트도 이것으로 맞춰 둠.
 - Firestore: 기본 데이터베이스, 보안 규칙 `firestore.rules`는 브라우저 직접 접근을 모두 거부(서버만 사용). 규칙 배포: `firebase deploy --only firestore:rules`(`firebase.json`, `.firebaserc`).
 - 설정값은 `.env.local`(Git 제외)에만 있습니다: `NEXT_PUBLIC_FIREBASE_API_KEY`, `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`, `NEXT_PUBLIC_FIREBASE_PROJECT_ID`, `NEXT_PUBLIC_FIREBASE_APP_ID`(웹 앱 공개 설정값), `TEACHER_EMAIL`(허용 교사 이메일), `GOOGLE_APPLICATION_CREDENTIALS`(서버용 서비스 계정 키 파일 위치, 키 파일은 프로젝트 폴더 밖에 둠). 배포 서비스에서는 키 파일 대신 `FIREBASE_SERVICE_ACCOUNT_KEY`(키 내용)를 사용자가 직접 입력합니다. **키 파일 내용은 열어 보거나 답변·코드·저장소에 넣지 않습니다.** 바꾸면 개발 서버를 다시 켜야 반영됩니다. Vercel Production 환경변수에도 같은 5개와 `FIREBASE_SERVICE_ACCOUNT_KEY`(사용자가 Vercel 화면에서 직접 입력, 숨김 값)가 있습니다(2026-11-03). 설정 화면: https://vercel.com/sohyunpei-4935s-projects/quiz-app/settings/environment-variables (계정 경로가 `sohyunpei-4935s-projects`). 비밀값을 CLI로 Vercel에 보내는 것은 자동 모드에서 막히므로 사용자가 직접 넣습니다. `NEXT_PUBLIC_*`는 빌드할 때 들어가므로 Vercel에서 바꾸면 다시 배포해야 반영됩니다.
+- Azure AI(강사 제공): 호출 방식 `openai-v1`(주소 `{AZURE_ENDPOINT}/openai/v1/chat/completions`, 머리말 `api-key`, `model`=배포명, JSON 모양 강제). 설정값은 `.env.local`의 `AZURE_API_STYLE`, `AZURE_ENDPOINT`, `AZURE_DEPLOYMENT`, `AZURE_API_KEY`(비밀값, 답변·코드·저장소에 넣지 않음). `AZURE_API_STYLE`이 `openai-v1`이 아니면 부르지 않습니다(다른 방식 추측 금지). **Vercel에는 아직 넣지 않았습니다**(배포할 때 사용자가 Vercel 화면에서 직접 4개 입력). 실제 호출 시험은 강사가 허용한 범위에서 최소 횟수로만 합니다.
 - 작업 폴더가 OneDrive 동기화 폴더(`바탕 화면`) 안에 있습니다. 설치 중 파일 잠김 오류(`EPERM`, `EBUSY`)가 나면 이 점부터 의심합니다.
 
 ## 명령 (2026-11-02 실제로 확인함)
@@ -28,9 +29,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `src/lib/quiz/`: 화면과 분리된 핵심 로직. `validate.ts`(문제지 글자 → 제목·문항 또는 쉬운 한국어 오류 목록, 교사 화면과 서버가 함께 씀), `grade.ts`(점수·정오 계산), `types.ts`(`StudentQuestion`/`StudentPaper`는 정답·해설을 뺀 풀이용 모양).
 - `src/lib/firebase/`: `client.ts`(브라우저 로그인용), `admin.ts`(서버 전용 Firestore 연결, 키 설정이 없으면 null).
 - `src/lib/store/`: `firestore.ts`(문제지·결과 읽기·쓰기, 중복 확인), `records.ts`(제출 검사·결과 모양·평균 등 순수 로직), `responses.ts`.
+- `src/lib/pdf/`: `limits.ts`(교육용 입력 기준: 파일 512KiB=524,288바이트, 본문 300~12,000자, 공백 정리·글자 수, 화면과 서버가 함께 씀), `extract.ts`(서버 전용, `unpdf` 1.8.1로 본문 읽기, 암호·손상·글자 없음(스캔) 거절). 기준을 넘으면 AI를 부르지 않고 거절하며 본문을 자르지 않습니다. 이 기준은 플랫폼 공통 한도가 아닙니다.
+- `src/lib/ai/`: `azure.ts`(서버 전용 Azure 호출·지시문·오류 구분, 자동 재시도 없음, 2분 시간 제한), `generated.ts`(AI 결과 형식 검사: 기존 `validatePaperText` + 정확히 10문항 + 제목 100자 이내).
 - `src/lib/teacher/`: `verify.ts`(로그인 증명 확인), `guard.ts`(`requireTeacher`: 교사 서버 창구마다 맨 먼저 호출).
-- 서버 창구 `src/app/api/`: `teacher/me`, `teacher/papers`(GET 목록, POST 등록), `teacher/papers/[id]`(PATCH 공개 변경), `teacher/papers/[id]/results`(GET 결과표·평균), `student/submit`(POST 최종 제출 → 채점·저장 → 결과 반환).
-- `src/app/page.tsx`: 첫 화면. `src/app/teacher/page.tsx` → `src/components/teacher/`(`TeacherApp` 로그인, `TeacherDashboard`, `PaperUpload`, `PaperResults`, `api.ts`).
+- 서버 창구 `src/app/api/`: `teacher/me`, `teacher/papers`(GET 목록, POST 등록: JSON 파일은 비공개, `source: "pdf-ai"`는 10문항 검사 후 바로 공개), `teacher/generate`(POST PDF → 본문 읽기 → Azure 생성 → 형식 검사 → 결과와 제목 중복 여부 반환, 저장·PDF 보관 안 함. Azure 오류는 429/502/503/504 + `reason`으로 돌려 교사 로그인 오류 401/403과 구분), `teacher/papers/[id]`(PATCH 공개 변경), `teacher/papers/[id]/results`(GET 결과표·평균), `student/submit`(POST 최종 제출 → 채점·저장 → 결과 반환).
+- `src/app/page.tsx`: 첫 화면. `src/app/teacher/page.tsx` → `src/components/teacher/`(`TeacherApp` 로그인, `TeacherDashboard`, `PdfGenerate`(PDF로 문제 만들기 → 확인 → "저장하고 공개하기"/"취소"만, 수정·재생성 버튼 없음), `PaperPreview`, `PaperUpload`, `PaperResults`, `api.ts`).
 - `src/app/student/page.tsx`: 요청마다 공개된 문제지를 정답 없이 읽어 `StudentApp`(`NameStep` → `QuizApp`)에 넘깁니다. 이름 정리는 `src/lib/student/name.ts`.
 - `src/components/quiz/QuizApp.tsx`: 단계(`list` → `ready` → `solving` → `result`)와 답을 들고 있다가, 제출 때 한 번 `/api/student/submit`을 부릅니다. 실패하면 답을 유지하고 다시 제출하게 합니다.
 - `src/components/quiz/`의 단계별 화면: `PaperListStep`, `ReadyStep`, `QuestionStep`, `ResultStep`.
@@ -51,6 +54,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **1일차 (지금 범위)**: `question-papers` 문제지 목록 표시·선택, 문항 표시, 4지선다 풀이, 완료 후 채점·점수·정오·해설 표시, 로컬 실행, Vercel 배포(요청 시)
 - **1일차에 만들지 않는 것**: 로그인, AI 문제 생성, DB 저장 (2일차에 교사 로그인까지 진행함)
 - **2일차 (나중 범위)**: 교사 Google 로그인과 학생 이름 기반 게스트 입장, 학습자료 업로드와 Azure AI 문제 생성, 생성 문제 저장·공개와 학생 문제 목록, 풀이 결과 Firestore 저장, 교사의 학생별 점수·오답·평균 조회
+- 2일차 진행 상황(2026-11-03): 1단계 화면 나누기, 2단계 교사 로그인, 3단계 Firestore 저장, 4단계 PDF·Azure 문제 생성을 만들었습니다. 4단계는 내 컴퓨터에서 로그인 후 생성→저장(공개)→학생 풀이→결과 저장까지 확인했고, 배포 주소에서는 아직 확인하지 않았습니다(PRD.md 5.2절 4단계 "확인 상태"). 문제지 **삭제 기능은 없습니다**(숨김 = "비공개로 바꾸기").
 - 1일차 코드는 2일차 기능을 붙이기 쉽게 구성하되, 2일차 기능을 미리 만들지 않습니다.
 
 ## 앱을 만드는 기준

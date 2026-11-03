@@ -6,6 +6,7 @@ import type { TeacherPaperRow } from "@/lib/store/firestore";
 import { errorMessages, teacherFetch } from "./api";
 import PaperResults from "./PaperResults";
 import PaperUpload from "./PaperUpload";
+import PdfGenerate from "./PdfGenerate";
 
 type Props = {
   email: string;
@@ -54,6 +55,8 @@ export default function TeacherDashboard({ email, user, onSignOut }: Props) {
       <h1>교사 화면</h1>
       <p className="muted">{email} 계정으로 로그인했습니다.</p>
 
+      <PdfGenerate getToken={getToken} onSaved={loadPapers} />
+
       <PaperUpload getToken={getToken} onSaved={loadPapers} />
 
       <div className="panel">
@@ -67,7 +70,7 @@ export default function TeacherDashboard({ email, user, onSignOut }: Props) {
           </p>
         )}
         {papers === null && !error && <p className="muted">불러오는 중입니다…</p>}
-        {papers?.length === 0 && <p className="notice">아직 등록한 문제지가 없습니다. 위에서 문제지 파일을 올려 주세요.</p>}
+        {papers?.length === 0 && <p className="notice">아직 등록한 문제지가 없습니다. 위에서 PDF로 문제를 만들거나 문제지 파일을 올려 주세요.</p>}
         {papers && papers.length > 0 && (
           <ul className="teacher-papers">
             {papers.map((p) => (
