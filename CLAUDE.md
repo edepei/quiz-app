@@ -5,38 +5,44 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## 프로젝트 현황
 
 - 문제풀이 교육용 웹앱입니다. 요구사항의 기준 문서는 [PRD.md](PRD.md)입니다.
-- 1일차 앱이 만들어져 있고, 2일차 1단계로 **교사·학생 화면을 나눴습니다**(2026-11-03, PRD.md 5.2절). 첫 화면(`/`)에서 역할을 고르고, 학생(`/student`)은 이름 입력 → 문제지 목록 → 문항 확인 → 풀이 → 결과, 교사(`/teacher`)는 2단계로 **Firebase Google 로그인**을 붙였습니다(허용 계정 1개). 교사 화면 내용은 아직 기본 틀이고, 데이터 저장(Firestore)은 아직 없습니다. 학생이 파일을 올리던 초기 버전은 더 이상 쓰지 않습니다(PRD.md 7절 버전 기록).
+- 1일차 앱이 만들어져 있고, 2일차 1단계로 **교사·학생 화면을 나눴습니다**(2026-11-03, PRD.md 5.2절). 첫 화면(`/`)에서 역할을 고르고, 학생(`/student`)은 이름 입력 → 공개된 문제지 목록 → 문항 확인 → 풀이 → 결과, 교사(`/teacher`)는 **Firebase Google 로그인**(허용 계정 1개) 뒤 문제지 등록·공개·결과 조회를 합니다. 3단계로 **Firestore 저장**을 붙였습니다(PRD.md 5.2절 3단계). 학생이 파일을 올리던 초기 버전은 더 이상 쓰지 않습니다(PRD.md 7절 버전 기록).
 - Git 저장소(`main`)는 GitHub 원격 저장소 `origin`(https://github.com/edepei/quiz-app)과 연결돼 있습니다.
 - Vercel 프로젝트 `quiz-app`(계정 `sohyunpei-4935`, 무료 요금제)에 연결돼 있고(`.vercel/`, Git 제외), 정식 주소는 https://quiz-app-ruddy-delta-94.vercel.app 입니다(2026-11-03 첫 배포). Vercel 프로젝트가 GitHub 저장소와 연결돼 있어(2026-11-03), **`main`에 push하면 정식 주소로 자동 배포됩니다.**
 - **배포와 GitHub push는 사용자가 따로 요청할 때만 합니다.** push가 곧 배포이므로 push 전에 `npm test`와 `npm run build`를 확인합니다. 그 전에는 `vercel` 등 배포 도구를 실행하거나 임시·공개 주소를 만들지 않습니다.
-- 문제지는 `question-papers/` 폴더의 JSON 파일입니다. 현재 `high-school-questions.json`(제목 "고등학교 정보과목", 10문항)과 `sample-questions.json`(제목 "중학교 정보과목", 10문항) 두 개입니다. 사용자가 요청하지 않는 한 문제지나 문항을 새로 만들거나 내용을 고치지 않습니다. 여러 문제지 동작은 자동 점검에서 시스템 임시 폴더로만 확인합니다.
+- 학생이 푸는 문제지는 교사가 올려 Firestore에 저장·공개한 것입니다. `question-papers/` 폴더의 JSON 파일(`high-school-questions.json` "고등학교 정보과목", `sample-questions.json` "중학교 정보과목", 각 10문항)은 교사 업로드용 예시이며 학생 목록에 바로 나오지 않습니다. 사용자가 요청하지 않는 한 문제지나 문항을 새로 만들거나 내용을 고치지 않습니다.
 - Firebase 프로젝트 `quiz-app-5e205`(표시 이름 quiz-app, 무료 요금제, 웹 앱 `quiz-app-web`). Authentication의 Google 로그인 사용 설정됨. 로그인 허용 도메인: localhost, `quiz-app-5e205.firebaseapp.com`, `quiz-app-5e205.web.app`, `quiz-app-ruddy-delta-94.vercel.app`(2026-11-03 추가). 콘솔에 같은 이름 "quiz-app"의 다른 프로젝트 `quiz-app-ec52e`가 있지만 이 앱은 쓰지 않습니다. Firebase MCP 도구의 현재 프로젝트도 이것으로 맞춰 둠.
-- 설정값은 `.env.local`(Git 제외)에만 있습니다: `NEXT_PUBLIC_FIREBASE_API_KEY`, `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`, `NEXT_PUBLIC_FIREBASE_PROJECT_ID`, `NEXT_PUBLIC_FIREBASE_APP_ID`(웹 앱 공개 설정값), `TEACHER_EMAIL`(허용 교사 이메일). 비밀키는 쓰지 않습니다. 바꾸면 개발 서버를 다시 켜야 반영됩니다. Vercel Production 환경변수에도 같은 5개를 넣어 두었습니다(2026-11-03, `TEACHER_EMAIL`은 숨김 값). `NEXT_PUBLIC_*`는 빌드할 때 들어가므로 Vercel에서 바꾸면 다시 배포해야 반영됩니다.
+- Firestore: 기본 데이터베이스, 보안 규칙 `firestore.rules`는 브라우저 직접 접근을 모두 거부(서버만 사용). 규칙 배포: `firebase deploy --only firestore:rules`(`firebase.json`, `.firebaserc`).
+- 설정값은 `.env.local`(Git 제외)에만 있습니다: `NEXT_PUBLIC_FIREBASE_API_KEY`, `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`, `NEXT_PUBLIC_FIREBASE_PROJECT_ID`, `NEXT_PUBLIC_FIREBASE_APP_ID`(웹 앱 공개 설정값), `TEACHER_EMAIL`(허용 교사 이메일), `GOOGLE_APPLICATION_CREDENTIALS`(서버용 서비스 계정 키 파일 위치, 키 파일은 프로젝트 폴더 밖에 둠). 배포 서비스에서는 키 파일 대신 `FIREBASE_SERVICE_ACCOUNT_KEY`(키 내용)를 사용자가 직접 입력합니다. **키 파일 내용은 열어 보거나 답변·코드·저장소에 넣지 않습니다.** 바꾸면 개발 서버를 다시 켜야 반영됩니다. Vercel Production 환경변수에도 같은 5개를 넣어 두었습니다(2026-11-03, `TEACHER_EMAIL`은 숨김 값). `NEXT_PUBLIC_*`는 빌드할 때 들어가므로 Vercel에서 바꾸면 다시 배포해야 반영됩니다.
 - 작업 폴더가 OneDrive 동기화 폴더(`바탕 화면`) 안에 있습니다. 설치 중 파일 잠김 오류(`EPERM`, `EBUSY`)가 나면 이 점부터 의심합니다.
 
 ## 명령 (2026-11-02 실제로 확인함)
 
 - `npm run dev`: 내 컴퓨터에서 실행 → http://localhost:3000 (`.claude/launch.json`의 `quiz-app`으로도 실행 가능)
-- `npm test`: 자동 점검(Vitest). 한 파일만: `npx vitest run src/lib/quiz/quiz.test.ts`, 한 항목만: `npx vitest run -t "70점"`
+- `npm test`: 자동 점검(Vitest, `vitest.config.mts`). 한 파일만: `npx vitest run src/lib/quiz/quiz.test.ts`, 한 항목만: `npx vitest run -t "70점"`
 - `npm run build`: 빌드와 타입 검사
+- 다른 대화의 개발 서버가 3000번을 쓰고 있으면 새 개발 서버가 켜지지 않습니다. 그때는 빌드 후 `.claude/launch.json`의 `quiz-app-built`(http://localhost:3002, 빌드한 앱 실행)로 확인합니다. 코드를 바꾸면 다시 빌드하고 다시 켜야 반영됩니다.
 - `vercel deploy --prod --yes`: 정식 주소로 배포(요청 시에만, 2026-11-03 확인). 정식 주소는 로그인 없이 열리지만, 배포마다 생기는 긴 주소는 Vercel 로그인을 요구합니다.
 
 ## 코드 구조
 
-- `src/lib/quiz/`: 화면과 분리된 핵심 로직. `papers.ts`(`question-papers` 폴더의 `.json`을 파일 이름 순으로 읽어 문제지 목록과 형식 오류 목록을 돌려줌), `validate.ts`(문제지 글자 → 제목·문항 또는 쉬운 한국어 오류 목록), `grade.ts`(점수·정오 계산), `types.ts`. 2일차에 문제 출처(AI·Firestore)가 바뀌어도 검사·채점 로직을 그대로 다시 씁니다.
-- `src/app/page.tsx`: 첫 화면(교사/학생 고르기). `src/app/teacher/page.tsx`: 교사 화면 기본 틀(로그인·문제 등록·결과 조회는 다음 단계).
-- `src/app/student/page.tsx`: 서버에서 문제지를 읽어 `StudentApp`(`src/components/student/`, 이름 입력 `NameStep` → `QuizApp`)에 넘깁니다. 이름 정리는 `src/lib/student/name.ts`. 이 페이지는 빌드할 때 고정 페이지로 만들어지므로, 문제지 파일을 바꾸면 개발 서버는 새로고침, 배포본은 다시 빌드해야 반영됩니다. (`papers.ts`의 `turbopackIgnore` 표시는 빌드 경고를 막기 위한 것)
-- `src/components/quiz/QuizApp.tsx`: 학생 화면 안에서 단계(`list` → `ready` → `solving` → `result`)와 고른 문제지·답을 들고 있는 화면. 저장소를 쓰지 않으므로 새로고침하면 목록부터 시작합니다.
-- `src/components/quiz/`의 단계별 화면: `PaperListStep`, `ReadyStep`, `QuestionStep`, `ResultStep`. `QuestionStep`은 정답·해설을 표시하지 않고, 채점은 `ResultStep`으로 넘어갈 때 한 번만 합니다.
+- `src/lib/quiz/`: 화면과 분리된 핵심 로직. `validate.ts`(문제지 글자 → 제목·문항 또는 쉬운 한국어 오류 목록, 교사 화면과 서버가 함께 씀), `grade.ts`(점수·정오 계산), `types.ts`(`StudentQuestion`/`StudentPaper`는 정답·해설을 뺀 풀이용 모양).
+- `src/lib/firebase/`: `client.ts`(브라우저 로그인용), `admin.ts`(서버 전용 Firestore 연결, 키 설정이 없으면 null).
+- `src/lib/store/`: `firestore.ts`(문제지·결과 읽기·쓰기, 중복 확인), `records.ts`(제출 검사·결과 모양·평균 등 순수 로직), `responses.ts`.
+- `src/lib/teacher/`: `verify.ts`(로그인 증명 확인), `guard.ts`(`requireTeacher`: 교사 서버 창구마다 맨 먼저 호출).
+- 서버 창구 `src/app/api/`: `teacher/me`, `teacher/papers`(GET 목록, POST 등록), `teacher/papers/[id]`(PATCH 공개 변경), `teacher/papers/[id]/results`(GET 결과표·평균), `student/submit`(POST 최종 제출 → 채점·저장 → 결과 반환).
+- `src/app/page.tsx`: 첫 화면. `src/app/teacher/page.tsx` → `src/components/teacher/`(`TeacherApp` 로그인, `TeacherDashboard`, `PaperUpload`, `PaperResults`, `api.ts`).
+- `src/app/student/page.tsx`: 요청마다 공개된 문제지를 정답 없이 읽어 `StudentApp`(`NameStep` → `QuizApp`)에 넘깁니다. 이름 정리는 `src/lib/student/name.ts`.
+- `src/components/quiz/QuizApp.tsx`: 단계(`list` → `ready` → `solving` → `result`)와 답을 들고 있다가, 제출 때 한 번 `/api/student/submit`을 부릅니다. 실패하면 답을 유지하고 다시 제출하게 합니다.
+- `src/components/quiz/`의 단계별 화면: `PaperListStep`, `ReadyStep`, `QuestionStep`, `ResultStep`.
 - 스타일은 `src/app/globals.css` 하나에 직접 작성합니다(추가 디자인 도구 없음).
 
 ## 요구사항 요약 (자세한 내용은 PRD.md)
 
 - 기술 구성: Next.js + TypeScript, Vercel 배포, PC·휴대폰 반응형 화면
 - 흐름: 문제지 목록 → 문제지 선택 → 문항 확인 → 한 문제씩 풀이 → 모든 문항 완료 → 최종 채점 → 점수·문항별 정오·해설 확인
-- 문제지 파일: `question-papers/*.json`. 최상위에 `title`(목록에 표시, `questions` 앞에 작성)과 `questions` 배열. 문항마다 `question`, `options`(4개), `correctAnswer`(1~4, 1이 첫 번째 보기), `explanation`이 있습니다.
-- 목록 제목은 화면에 고정하지 않고 각 파일의 `title`에서 읽습니다. 학생에게 파일 업로드를 요구하지 않습니다.
-- 풀이 중에는 정답 여부·점수·해설을 보여주지 않습니다. 정답을 숨기는 별도 보호 기능은 두지 않습니다.
+- 문제지 파일(교사 업로드 형식, 예시는 `question-papers/*.json`): 최상위에 `title`(목록에 표시, `questions` 앞에 작성)과 `questions` 배열. 문항마다 `question`, `options`(4개), `correctAnswer`(1~4, 1이 첫 번째 보기), `explanation`이 있습니다.
+- 목록 제목은 각 문제지의 `title`에서 읽습니다. 학생에게 파일 업로드를 요구하지 않습니다.
+- 풀이 중에는 정답 여부·점수·해설을 보여주지 않으며, 정답·해설을 학생 화면에 보내지도 않습니다(2일차 3단계부터, 채점은 서버).
 - 점수: `정답 수 ÷ 전체 문항 수 × 100`, 소수 첫째 자리까지 반올림합니다.
 - 세부 결정 사항(잘못된 문제지 처리, 이전/다음 이동, 결과 화면 구성 등)은 PRD.md 4.5절을 따릅니다.
 

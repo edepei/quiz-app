@@ -5,22 +5,41 @@ import PaperListStep from "@/components/quiz/PaperListStep";
 import QuestionStep from "@/components/quiz/QuestionStep";
 import ReadyStep from "@/components/quiz/ReadyStep";
 import ResultStep from "@/components/quiz/ResultStep";
-import { gradeQuiz } from "@/lib/quiz/grade";
-import type { Answers, GradeResult, InvalidPaper, QuestionPaper } from "@/lib/quiz/types";
+import type { Answers, GradeResult, StudentPaper } from "@/lib/quiz/types";
 
 type Step = "list" | "ready" | "solving" | "result";
 
 type Props = {
-  papers: QuestionPaper[];
-  invalid: InvalidPaper[];
+  studentName: string;
+  papers: StudentPaper[];
+  loadError: string | null;
 };
 
-export default function QuizApp({ papers, invalid }: Props) {
+// 최종 제출 때 한 번만 서버에 보냅니다. 서버가 채점·저장한 뒤 점수와 정답·해설을 돌려줍니다.
+async function submitAnswers(paperId: string, studentName: string, answers: Answers): Promise<GradeResult> {
+  let res: Response;
+  try {
+    res = await fetch("/api/student/submit", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ paperId, studentName, answers }),
+    });
+  } catch {
+    throw new Error("인터넷 연결이 끊겨 결과를 저장하지 못했습니다.");
+  }
+  const data = await res.json().catch(() => null);
+  if (!res.ok || !data?.result) throw new Error(data?.error ?? "결과를 저장하지 못했습니다.");
+  return data.result;
+}
+
+export default function QuizApp({ studentName, papers, loadError }: Props) {
   const [step, setStep] = useState<Step>("list");
-  const [paper, setPaper] = useState<QuestionPaper | null>(null);
+  const [paper, setPaper] = useState<StudentPaper | null>(null);
   const [answers, setAnswers] = useState<Answers>([]);
   const [index, setIndex] = useState(0);
   const [result, setResult] = useState<GradeResult | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const questions = paper?.questions ?? [];
 
@@ -33,6 +52,7 @@ export default function QuizApp({ papers, invalid }: Props) {
     setAnswers(questions.map(() => null));
     setIndex(0);
     setResult(null);
+    setSubmitError(null);
     go("solving");
   }
 
@@ -41,12 +61,26 @@ export default function QuizApp({ papers, invalid }: Props) {
     go("list");
   }
 
+  async function submit() {
+    if (!paper || submitting) return;
+    setSubmitting(true);
+    setSubmitError(null);
+    try {
+      setResult(await submitAnswers(paper.id, studentName, answers));
+      go("result");
+    } catch (e) {
+      setSubmitError((e as Error).message);
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
   return (
     <>
       {step === "list" && (
         <PaperListStep
           papers={papers}
-          invalid={invalid}
+          loadError={loadError}
           onSelect={(p) => {
             setPaper(p);
             go("ready");
@@ -68,10 +102,9 @@ export default function QuizApp({ papers, invalid }: Props) {
             setIndex(i);
             window.scrollTo(0, 0);
           }}
-          onSubmit={() => {
-            setResult(gradeQuiz(questions, answers));
-            go("result");
-          }}
+          onSubmit={submit}
+          submitting={submitting}
+          submitError={submitError}
         />
       )}
 

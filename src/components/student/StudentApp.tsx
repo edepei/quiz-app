@@ -4,15 +4,15 @@ import Link from "next/link";
 import { useState } from "react";
 import QuizApp from "@/components/quiz/QuizApp";
 import NameStep from "@/components/student/NameStep";
-import type { InvalidPaper, QuestionPaper } from "@/lib/quiz/types";
+import type { StudentPaper } from "@/lib/quiz/types";
 
 type Props = {
-  papers: QuestionPaper[];
-  invalid: InvalidPaper[];
+  papers: StudentPaper[];
+  loadError: string | null;
 };
 
-// 학생 이름은 화면에만 들고 있습니다. 저장하지 않으므로 새로고침하면 이름부터 다시 입력합니다.
-export default function StudentApp({ papers, invalid }: Props) {
+// 학생 이름은 화면에만 들고 있다가 최종 제출할 때 결과와 함께 저장합니다. 새로고침하면 이름부터 다시 입력합니다.
+export default function StudentApp({ papers, loadError }: Props) {
   const [name, setName] = useState<string | null>(null);
 
   return (
@@ -24,7 +24,7 @@ export default function StudentApp({ papers, invalid }: Props) {
         </Link>
       </header>
 
-      {name ? <QuizApp papers={papers} invalid={invalid} /> : <NameStep onEnter={setName} />}
+      {name ? <QuizApp studentName={name} papers={papers} loadError={loadError} /> : <NameStep onEnter={setName} />}
     </main>
   );
 }

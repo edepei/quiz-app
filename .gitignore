@@ -9,3 +9,7 @@ npm-debug.log*
 
 .vercel
 .env*
+
+# 서버용 Firebase 키 파일이 실수로 폴더에 들어와도 GitHub에 올라가지 않게 합니다
+*firebase-adminsdk*.json
+*service-account*.json

@@ -9,7 +9,7 @@ type State =
   | { kind: "loading" }
   | { kind: "not-configured" }
   | { kind: "signed-out"; message?: string }
-  | { kind: "allowed"; email: string }
+  | { kind: "allowed"; email: string; user: User }
   | { kind: "denied"; email: string | null }
   | { kind: "error" };
 
@@ -20,7 +20,7 @@ async function checkWithServer(user: User): Promise<State> {
       headers: { Authorization: `Bearer ${await user.getIdToken()}` },
       cache: "no-store",
     });
-    if (res.ok) return { kind: "allowed", email: (await res.json()).email };
+    if (res.ok) return { kind: "allowed", email: (await res.json()).email, user };
     if (res.status === 403) return { kind: "denied", email: user.email };
     if (res.status === 503) return { kind: "not-configured" };
     return { kind: "error" };
@@ -89,7 +89,7 @@ export default function TeacherApp() {
       );
 
     case "allowed":
-      return <TeacherDashboard email={state.email} onSignOut={logOut} />;
+      return <TeacherDashboard email={state.email} user={state.user} onSignOut={logOut} />;
 
     case "denied":
       return (

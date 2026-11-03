@@ -1,15 +1,17 @@
-import type { Answers, Question } from "@/lib/quiz/types";
+import type { Answers, StudentQuestion } from "@/lib/quiz/types";
 
 type Props = {
-  questions: Question[];
+  questions: StudentQuestion[];
   answers: Answers;
   index: number;
   onChoose: (choice: number) => void;
   onMove: (index: number) => void;
   onSubmit: () => void;
+  submitting: boolean;
+  submitError: string | null;
 };
 
-export default function QuestionStep({ questions, answers, index, onChoose, onMove, onSubmit }: Props) {
+export default function QuestionStep({ questions, answers, index, onChoose, onMove, onSubmit, submitting, submitError }: Props) {
   const q = questions[index];
   const total = questions.length;
   const isLast = index === total - 1;
@@ -47,12 +49,17 @@ export default function QuestionStep({ questions, answers, index, onChoose, onMo
       </div>
 
       <div className="nav">
-        <button type="button" className="button" onClick={() => onMove(index - 1)} disabled={index === 0}>
+        <button type="button" className="button" onClick={() => onMove(index - 1)} disabled={index === 0 || submitting}>
           이전
         </button>
         {isLast ? (
-          <button type="button" className="button primary" onClick={onSubmit} disabled={unanswered.length > 0}>
-            채점하기
+          <button
+            type="button"
+            className="button primary"
+            onClick={onSubmit}
+            disabled={unanswered.length > 0 || submitting}
+          >
+            {submitting ? "제출하는 중…" : submitError ? "다시 제출하기" : "제출하고 채점하기"}
           </button>
         ) : (
           <button type="button" className="button primary" onClick={() => onMove(index + 1)}>
@@ -65,6 +72,13 @@ export default function QuestionStep({ questions, answers, index, onChoose, onMo
         <p className="notice">
           아직 답하지 않은 문항: {unanswered.join(", ")}번. 모든 문항에 답하면 채점할 수 있습니다.
         </p>
+      )}
+
+      {submitError && (
+        <div className="error" role="alert">
+          <p>{submitError}</p>
+          <p>고른 답은 그대로 남아 있습니다. &quot;다시 제출하기&quot;를 눌러 주세요.</p>
+        </div>
       )}
     </section>
   );
