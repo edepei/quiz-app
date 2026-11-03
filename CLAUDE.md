@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## 프로젝트 현황
 
 - 문제풀이 교육용 웹앱입니다. 요구사항의 기준 문서는 [PRD.md](PRD.md)입니다.
-- 1일차 앱이 만들어져 있습니다. 현재 버전은 **문제지 목록 선택** 방식입니다(목록 → 문항 확인 → 풀이 → 결과). 학생이 파일을 올리던 초기 버전은 더 이상 쓰지 않습니다(PRD.md 7절 버전 기록).
+- 1일차 앱이 만들어져 있고, 2일차 1단계로 **교사·학생 화면을 나눴습니다**(2026-11-03, PRD.md 5.2절). 첫 화면(`/`)에서 역할을 고르고, 학생(`/student`)은 이름 입력 → 문제지 목록 → 문항 확인 → 풀이 → 결과, 교사(`/teacher`)는 기본 틀만 있습니다. 로그인·저장은 아직 없습니다. 학생이 파일을 올리던 초기 버전은 더 이상 쓰지 않습니다(PRD.md 7절 버전 기록).
 - Git 저장소(`main`)는 GitHub 원격 저장소 `origin`(https://github.com/edepei/quiz-app)과 연결돼 있습니다.
 - Vercel 프로젝트 `quiz-app`(계정 `sohyunpei-4935`, 무료 요금제)에 연결돼 있고(`.vercel/`, Git 제외), 정식 주소는 https://quiz-app-ruddy-delta-94.vercel.app 입니다(2026-11-03 첫 배포). Vercel 프로젝트가 GitHub 저장소와 연결돼 있어(2026-11-03), **`main`에 push하면 정식 주소로 자동 배포됩니다.**
 - **배포와 GitHub push는 사용자가 따로 요청할 때만 합니다.** push가 곧 배포이므로 push 전에 `npm test`와 `npm run build`를 확인합니다. 그 전에는 `vercel` 등 배포 도구를 실행하거나 임시·공개 주소를 만들지 않습니다.
@@ -22,8 +22,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## 코드 구조
 
 - `src/lib/quiz/`: 화면과 분리된 핵심 로직. `papers.ts`(`question-papers` 폴더의 `.json`을 파일 이름 순으로 읽어 문제지 목록과 형식 오류 목록을 돌려줌), `validate.ts`(문제지 글자 → 제목·문항 또는 쉬운 한국어 오류 목록), `grade.ts`(점수·정오 계산), `types.ts`. 2일차에 문제 출처(AI·Firestore)가 바뀌어도 검사·채점 로직을 그대로 다시 씁니다.
-- `src/app/page.tsx`: 서버에서 문제지를 읽어 `QuizApp`에 넘깁니다. 홈은 빌드할 때 고정 페이지로 만들어지므로, 문제지 파일을 바꾸면 개발 서버는 새로고침, 배포본은 다시 빌드해야 반영됩니다. (`papers.ts`의 `turbopackIgnore` 표시는 빌드 경고를 막기 위한 것)
-- `src/components/quiz/QuizApp.tsx`: 단계(`list` → `ready` → `solving` → `result`)와 고른 문제지·답을 들고 있는 화면. 저장소를 쓰지 않으므로 새로고침하면 목록부터 시작합니다.
+- `src/app/page.tsx`: 첫 화면(교사/학생 고르기). `src/app/teacher/page.tsx`: 교사 화면 기본 틀(로그인·문제 등록·결과 조회는 다음 단계).
+- `src/app/student/page.tsx`: 서버에서 문제지를 읽어 `StudentApp`(`src/components/student/`, 이름 입력 `NameStep` → `QuizApp`)에 넘깁니다. 이름 정리는 `src/lib/student/name.ts`. 이 페이지는 빌드할 때 고정 페이지로 만들어지므로, 문제지 파일을 바꾸면 개발 서버는 새로고침, 배포본은 다시 빌드해야 반영됩니다. (`papers.ts`의 `turbopackIgnore` 표시는 빌드 경고를 막기 위한 것)
+- `src/components/quiz/QuizApp.tsx`: 학생 화면 안에서 단계(`list` → `ready` → `solving` → `result`)와 고른 문제지·답을 들고 있는 화면. 저장소를 쓰지 않으므로 새로고침하면 목록부터 시작합니다.
 - `src/components/quiz/`의 단계별 화면: `PaperListStep`, `ReadyStep`, `QuestionStep`, `ResultStep`. `QuestionStep`은 정답·해설을 표시하지 않고, 채점은 `ResultStep`으로 넘어갈 때 한 번만 합니다.
 - 스타일은 `src/app/globals.css` 하나에 직접 작성합니다(추가 디자인 도구 없음).
 

@@ -42,7 +42,7 @@ export default function QuizApp({ papers, invalid }: Props) {
   }
 
   return (
-    <main className="container">
+    <>
       {step === "list" && (
         <PaperListStep
           papers={papers}
@@ -78,6 +78,6 @@ export default function QuizApp({ papers, invalid }: Props) {
       {step === "result" && result && (
         <ResultStep result={result} onRetry={startSolving} onBackToList={backToList} />
       )}
-    </main>
+    </>
   );
 }

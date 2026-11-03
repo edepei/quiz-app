@@ -80,6 +80,13 @@ p {
   cursor: pointer;
 }
 
+.button.small {
+  min-height: 40px;
+  padding: 0 14px;
+  font-size: 0.95rem;
+  text-decoration: none;
+}
+
 .button.primary {
   background: var(--primary);
   border-color: var(--primary);
@@ -116,6 +123,10 @@ p {
   cursor: pointer;
 }
 
+a.paper {
+  text-decoration: none;
+}
+
 .paper:hover,
 .paper:focus-visible {
   border-color: var(--primary);
@@ -149,6 +160,66 @@ p {
   padding: 12px 14px;
   border-radius: 10px;
   background: var(--notice-bg);
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.topbar-name {
+  font-weight: 700;
+}
+
+.panel {
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.panel h2 {
+  margin: 0 0 6px;
+  font-size: 1.15rem;
+}
+
+.panel p {
+  margin: 0;
+}
+
+.label {
+  display: block;
+  margin: 16px 0 6px;
+  font-weight: 700;
+}
+
+.input {
+  width: 100%;
+  min-height: 52px;
+  padding: 0 14px;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  background: var(--card);
+  color: var(--text);
+  font: inherit;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.input[aria-invalid="true"] {
+  border-color: var(--wrong);
+}
+
+.field-error {
+  margin: 8px 0 0;
+  color: var(--wrong);
+  font-weight: 600;
 }
 
 .progress {
