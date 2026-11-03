@@ -10,8 +10,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Vercel 프로젝트 `quiz-app`(계정 `sohyunpei-4935`, 무료 요금제)에 연결돼 있고(`.vercel/`, Git 제외), 정식 주소는 https://quiz-app-ruddy-delta-94.vercel.app 입니다(2026-11-03 첫 배포). Vercel 프로젝트가 GitHub 저장소와 연결돼 있어(2026-11-03), **`main`에 push하면 정식 주소로 자동 배포됩니다.**
 - **배포와 GitHub push는 사용자가 따로 요청할 때만 합니다.** push가 곧 배포이므로 push 전에 `npm test`와 `npm run build`를 확인합니다. 그 전에는 `vercel` 등 배포 도구를 실행하거나 임시·공개 주소를 만들지 않습니다.
 - 문제지는 `question-papers/` 폴더의 JSON 파일입니다. 현재 `high-school-questions.json`(제목 "고등학교 정보과목", 10문항)과 `sample-questions.json`(제목 "중학교 정보과목", 10문항) 두 개입니다. 사용자가 요청하지 않는 한 문제지나 문항을 새로 만들거나 내용을 고치지 않습니다. 여러 문제지 동작은 자동 점검에서 시스템 임시 폴더로만 확인합니다.
-- Firebase 프로젝트 `quiz-app-5e205`(표시 이름 quiz-app, 무료 요금제, 웹 앱 `quiz-app-web`). Authentication의 Google 로그인 사용 설정됨. 로그인 허용 도메인은 기본값(localhost, `quiz-app-5e205.firebaseapp.com`, `quiz-app-5e205.web.app`)뿐이라 **Vercel 정식 주소는 아직 등록 안 됨**. Firebase MCP 도구의 현재 프로젝트도 이것으로 맞춰 둠.
-- 설정값은 `.env.local`(Git 제외)에만 있습니다: `NEXT_PUBLIC_FIREBASE_API_KEY`, `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`, `NEXT_PUBLIC_FIREBASE_PROJECT_ID`, `NEXT_PUBLIC_FIREBASE_APP_ID`(웹 앱 공개 설정값), `TEACHER_EMAIL`(허용 교사 이메일). 비밀키는 쓰지 않습니다. 바꾸면 개발 서버를 다시 켜야 반영됩니다. **Vercel에는 아직 이 값들이 없어서**, 지금 push하면 정식 주소의 교사 화면은 "준비되지 않았습니다" 안내만 나옵니다(학생 화면은 정상).
+- Firebase 프로젝트 `quiz-app-5e205`(표시 이름 quiz-app, 무료 요금제, 웹 앱 `quiz-app-web`). Authentication의 Google 로그인 사용 설정됨. 로그인 허용 도메인: localhost, `quiz-app-5e205.firebaseapp.com`, `quiz-app-5e205.web.app`, `quiz-app-ruddy-delta-94.vercel.app`(2026-11-03 추가). 콘솔에 같은 이름 "quiz-app"의 다른 프로젝트 `quiz-app-ec52e`가 있지만 이 앱은 쓰지 않습니다. Firebase MCP 도구의 현재 프로젝트도 이것으로 맞춰 둠.
+- 설정값은 `.env.local`(Git 제외)에만 있습니다: `NEXT_PUBLIC_FIREBASE_API_KEY`, `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`, `NEXT_PUBLIC_FIREBASE_PROJECT_ID`, `NEXT_PUBLIC_FIREBASE_APP_ID`(웹 앱 공개 설정값), `TEACHER_EMAIL`(허용 교사 이메일). 비밀키는 쓰지 않습니다. 바꾸면 개발 서버를 다시 켜야 반영됩니다. Vercel Production 환경변수에도 같은 5개를 넣어 두었습니다(2026-11-03, `TEACHER_EMAIL`은 숨김 값). `NEXT_PUBLIC_*`는 빌드할 때 들어가므로 Vercel에서 바꾸면 다시 배포해야 반영됩니다.
 - 작업 폴더가 OneDrive 동기화 폴더(`바탕 화면`) 안에 있습니다. 설치 중 파일 잠김 오류(`EPERM`, `EBUSY`)가 나면 이 점부터 의심합니다.
 
 ## 명령 (2026-11-02 실제로 확인함)
