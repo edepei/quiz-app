@@ -6,9 +6,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - 문제풀이 교육용 웹앱입니다. 요구사항의 기준 문서는 [PRD.md](PRD.md)입니다.
 - 1일차 앱이 만들어져 있습니다. 현재 버전은 **문제지 목록 선택** 방식입니다(목록 → 문항 확인 → 풀이 → 결과). 학생이 파일을 올리던 초기 버전은 더 이상 쓰지 않습니다(PRD.md 7절 버전 기록).
-- 로컬 Git 저장소(`main`)만 있고, 원격 저장소와 Vercel 연결은 없습니다.
-- **배포는 사용자가 따로 "배포해달라"고 요청할 때만 합니다.** 그 전에는 `vercel` 등 배포 도구를 실행하거나 임시·공개 주소를 만들지 않고, GitHub에 push하지 않습니다.
-- 문제지는 `question-papers/` 폴더의 JSON 파일입니다. 현재 `sample-questions.json`(제목 "중학교 정보과목", 10문항) 하나뿐입니다. 사용자가 요청하지 않는 한 문제지나 문항을 새로 만들거나 내용을 고치지 않습니다. 여러 문제지 동작은 자동 점검에서 시스템 임시 폴더로만 확인합니다.
+- Git 저장소(`main`)는 GitHub 원격 저장소 `origin`(https://github.com/edepei/quiz-app)과 연결돼 있습니다.
+- Vercel 프로젝트 `quiz-app`(계정 `sohyunpei-4935`, 무료 요금제)에 연결돼 있고(`.vercel/`, Git 제외), 정식 주소는 https://quiz-app-ruddy-delta-94.vercel.app 입니다(2026-11-03 첫 배포). Vercel–GitHub 자동 배포 연결은 없으므로 push해도 자동 배포되지 않습니다.
+- **배포와 GitHub push는 사용자가 따로 요청할 때만 합니다.** 그 전에는 `vercel` 등 배포 도구를 실행하거나 임시·공개 주소를 만들지 않습니다.
+- 문제지는 `question-papers/` 폴더의 JSON 파일입니다. 현재 `high-school-questions.json`(제목 "고등학교 정보과목", 10문항)과 `sample-questions.json`(제목 "중학교 정보과목", 10문항) 두 개입니다. 사용자가 요청하지 않는 한 문제지나 문항을 새로 만들거나 내용을 고치지 않습니다. 여러 문제지 동작은 자동 점검에서 시스템 임시 폴더로만 확인합니다.
 - 작업 폴더가 OneDrive 동기화 폴더(`바탕 화면`) 안에 있습니다. 설치 중 파일 잠김 오류(`EPERM`, `EBUSY`)가 나면 이 점부터 의심합니다.
 
 ## 명령 (2026-11-02 실제로 확인함)
@@ -16,6 +17,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `npm run dev`: 내 컴퓨터에서 실행 → http://localhost:3000 (`.claude/launch.json`의 `quiz-app`으로도 실행 가능)
 - `npm test`: 자동 점검(Vitest). 한 파일만: `npx vitest run src/lib/quiz/quiz.test.ts`, 한 항목만: `npx vitest run -t "70점"`
 - `npm run build`: 빌드와 타입 검사
+- `vercel deploy --prod --yes`: 정식 주소로 배포(요청 시에만, 2026-11-03 확인). 정식 주소는 로그인 없이 열리지만, 배포마다 생기는 긴 주소는 Vercel 로그인을 요구합니다.
 
 ## 코드 구조
 
