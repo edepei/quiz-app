@@ -93,3 +93,17 @@ export function averageScore(scores: number[]): number | null {
   if (scores.length === 0) return null;
   return calcScore(scores.reduce((sum, s) => sum + s, 0), scores.length * 100);
 }
+
+export type WrongItem = { number: number; question: string | null };
+
+/**
+ * 결과표용: 틀린 문항 번호마다 문제 내용을 붙입니다. 저장된 결과는 바꾸지 않습니다.
+ * 결과를 저장할 때의 문항 수와 지금 문제지의 문항 수가 다르면 내용을 맞춰 붙이지 않고 null로 둡니다.
+ */
+export function wrongItems(questions: Pick<Question, "question">[], total: number, wrongQuestions: number[]): WrongItem[] {
+  const matches = total === questions.length;
+  return wrongQuestions.map((number) => ({
+    number,
+    question: matches ? (questions[number - 1]?.question ?? null) : null,
+  }));
+}

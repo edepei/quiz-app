@@ -42,6 +42,8 @@ export default function TeacherDashboard({ email, user, onSignOut }: Props) {
         method: "PATCH",
         body: JSON.stringify({ published: !paper.published }),
       });
+      // 숨긴 문제지는 결과를 보여 주지 않으므로 열려 있던 결과표를 닫습니다.
+      if (paper.published && openId === paper.id) setOpenId(null);
       await loadPapers();
     } catch (e) {
       setError(errorMessages(e).join(" "));
@@ -62,7 +64,7 @@ export default function TeacherDashboard({ email, user, onSignOut }: Props) {
       <div className="panel">
         <h2>등록한 문제지</h2>
         <p className="muted">
-          &quot;공개&quot; 상태인 문제지만 학생 목록에 보입니다. &quot;결과 보기&quot;를 누르면 학생 점수표가 열립니다.
+          &quot;공개&quot; 상태인 문제지만 학생 목록에 보입니다. &quot;결과 보기&quot;를 누르면 학생 결과표와 평균이 열립니다. 숨긴(비공개) 문제지는 결과를 보여 주지 않습니다.
         </p>
         {error && (
           <p className="error" role="alert">
@@ -90,17 +92,20 @@ export default function TeacherDashboard({ email, user, onSignOut }: Props) {
                     >
                       {busyId === p.id ? "바꾸는 중…" : p.published ? "비공개로 바꾸기" : "공개하기"}
                     </button>
-                    <button
-                      type="button"
-                      className="button small"
-                      aria-expanded={openId === p.id}
-                      onClick={() => setOpenId(openId === p.id ? null : p.id)}
-                    >
-                      {openId === p.id ? "결과 닫기" : "결과 보기"}
-                    </button>
+                    {p.published && (
+                      <button
+                        type="button"
+                        className="button small"
+                        aria-expanded={openId === p.id}
+                        onClick={() => setOpenId(openId === p.id ? null : p.id)}
+                      >
+                        {openId === p.id ? "결과 닫기" : "결과 보기"}
+                      </button>
+                    )}
                   </div>
                 </div>
-                {openId === p.id && <PaperResults getToken={getToken} paperId={p.id} />}
+                {!p.published && <p className="muted small">숨긴 문제지는 결과를 보여 주지 않습니다. 공개하면 다시 볼 수 있습니다.</p>}
+                {p.published && openId === p.id && <PaperResults getToken={getToken} paperId={p.id} />}
               </li>
             ))}
           </ul>

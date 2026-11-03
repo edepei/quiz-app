@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 import type { QuestionPaper } from "@/lib/quiz/types";
 import { validatePaperText } from "@/lib/quiz/validate";
-import { averageScore, buildResult, checkAnswers, paperKeys, parseSubmission, resultDocId, toStudentPaper } from "./records";
+import { averageScore, buildResult, checkAnswers, paperKeys, parseSubmission, resultDocId, toStudentPaper, wrongItems } from "./records";
 
 let paper: QuestionPaper;
 
@@ -98,5 +98,30 @@ describe("averageScore", () => {
     expect(averageScore([100, 70, 50])).toBe(73.3);
     expect(averageScore([33.3, 66.7])).toBe(50);
     expect(averageScore([])).toBeNull();
+  });
+
+  it("점수 합계 ÷ 제출 학생 수 (실제 저장된 중학교 정보과목 결과 10·90·60점 → 53.3점)", () => {
+    expect(averageScore([10, 90, 60])).toBe(53.3);
+    expect(averageScore([70])).toBe(70);
+  });
+});
+
+describe("wrongItems", () => {
+  const qs = [{ question: "1번 문제" }, { question: "2번 문제" }, { question: "3번 문제" }];
+
+  it("틀린 번호마다 문제 내용을 붙임", () => {
+    expect(wrongItems(qs, 3, [1, 3])).toEqual([
+      { number: 1, question: "1번 문제" },
+      { number: 3, question: "3번 문제" },
+    ]);
+  });
+
+  it("틀린 문제가 없으면 빈 목록", () => {
+    expect(wrongItems(qs, 3, [])).toEqual([]);
+  });
+
+  it("문항 수가 맞지 않거나 없는 번호면 내용을 지어내지 않고 null", () => {
+    expect(wrongItems(qs, 10, [1])).toEqual([{ number: 1, question: null }]);
+    expect(wrongItems(qs, 3, [5])).toEqual([{ number: 5, question: null }]);
   });
 });

@@ -1,6 +1,6 @@
 import { FieldValue, type Firestore, type Timestamp } from "firebase-admin/firestore";
 import type { Question, QuestionPaper, StudentPaper } from "@/lib/quiz/types";
-import { averageScore, paperKeys, resultDocId, toStudentPaper, type ResultRecord } from "./records";
+import { averageScore, paperKeys, resultDocId, toStudentPaper, wrongItems, type ResultRecord, type WrongItem } from "./records";
 
 // Firestore 읽기·쓰기를 모은 곳입니다. 서버에서만 호출하고, 권한 확인은 부르는 쪽(서버 창구)에서 먼저 합니다.
 // papers/{자동번호}: 문제지(정답·해설 포함), results/{문제지+이름}: 이름별 최신 완료 결과
@@ -29,9 +29,13 @@ export type TeacherPaperRow = {
   createdAt: string;
 };
 
-export type ResultRow = Pick<ResultRecord, "studentName" | "score" | "correctCount" | "total" | "wrongQuestions"> & {
-  completedAt: string;
-};
+/** 교사 결과표 한 줄: 학생 이름, 점수, 틀린 문항(번호와 문제 내용) */
+export type ResultRow = Pick<ResultRecord, "studentName" | "score"> & { wrong: WrongItem[] };
+
+export type PaperResults =
+  | { status: "missing" }
+  | { status: "hidden" }
+  | { status: "ok"; title: string; questionCount: number; rows: ResultRow[]; average: number | null };
 
 const iso = (t: Timestamp | undefined) => t?.toDate().toISOString() ?? "";
 
@@ -117,31 +121,29 @@ export async function saveResult(db: Firestore, record: ResultRecord): Promise<v
     .set({ ...record, completedAt: FieldValue.serverTimestamp() });
 }
 
-export async function getPaperResults(
-  db: Firestore,
-  paperId: string,
-): Promise<{ title: string; questionCount: number; rows: ResultRow[]; average: number | null } | null> {
+/**
+ * 문제지 하나의 결과표와 평균. 제목이 아니라 문제지 문서 번호(paperId)로 결과를 찾습니다.
+ * 결과는 최종 제출이 저장된 것만 있고, 같은 문제지·같은 이름은 문서가 하나라 한 번만 반영됩니다.
+ * 숨긴(비공개) 문제지는 결과를 지우지 않고 보여 주지만 않습니다.
+ */
+export async function getPaperResults(db: Firestore, paperId: string): Promise<PaperResults> {
   const paper = await db.collection(PAPERS).doc(paperId).get();
-  if (!paper.exists) return null;
+  const p = paper.data() as PaperDoc | undefined;
+  if (!p) return { status: "missing" };
+  if (!p.published) return { status: "hidden" };
 
   const snap = await db.collection(RESULTS).where("paperId", "==", paperId).get();
   const rows = snap.docs
     .map((d) => {
-      const r = d.data();
-      return {
-        studentName: r.studentName,
-        score: r.score,
-        correctCount: r.correctCount,
-        total: r.total,
-        wrongQuestions: r.wrongQuestions,
-        completedAt: iso(r.completedAt),
-      } as ResultRow;
+      const r = d.data() as ResultRecord;
+      return { studentName: r.studentName, score: r.score, wrong: wrongItems(p.questions, r.total, r.wrongQuestions) };
     })
     .sort((a, b) => a.studentName.localeCompare(b.studentName, "ko"));
 
   return {
-    title: paper.get("title"),
-    questionCount: paper.get("questionCount"),
+    status: "ok",
+    title: p.title,
+    questionCount: p.questionCount,
     rows,
     average: averageScore(rows.map((r) => r.score)),
   };

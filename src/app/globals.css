@@ -506,8 +506,18 @@ a.paper {
   white-space: nowrap;
 }
 
-/* 좁은 화면에서는 표를 옆으로 밀어 보고, 이름·점수·시각은 한 줄로 둡니다 */
-.table td:nth-child(-n + 2),
-.table td:last-child {
+/* 좁은 화면에서는 표를 옆으로 밀어 보고, 이름·점수는 한 줄로 둡니다 */
+.table td:nth-child(-n + 2) {
   white-space: nowrap;
+}
+
+.wrong-list {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+  min-width: 14em;
+}
+
+.wrong-list li + li {
+  margin-top: 4px;
 }

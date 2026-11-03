@@ -11,10 +11,8 @@ type Props = {
   paperId: string;
 };
 
-const timeText = (iso: string) =>
-  iso ? new Date(iso).toLocaleString("ko-KR", { dateStyle: "short", timeStyle: "short" }) : "";
-
-// 한 문제지의 학생별 최신 결과와 평균 점수
+// 한 문제지의 결과표(학생 이름·점수·틀린 문항)와 평균 점수
+// 평균 = 최종 제출이 저장된 학생 점수 합 ÷ 제출 학생 수. 같은 이름은 최신 결과 1개만 들어갑니다.
 export default function PaperResults({ getToken, paperId }: Props) {
   const [results, setResults] = useState<Results | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -45,48 +43,66 @@ export default function PaperResults({ getToken, paperId }: Props) {
   }
   if (!results) return <p className="muted">결과를 불러오는 중입니다…</p>;
 
+  if (results.rows.length === 0) {
+    return (
+      <div className="results-box">
+        <p className="notice">아직 제출한 학생이 없습니다.</p>
+        <ReloadButton onClick={() => setReload((n) => n + 1)} />
+      </div>
+    );
+  }
+
   return (
     <div className="results-box">
       <p>
-        푼 학생 {results.rows.length}명 · 평균 <strong>{results.average === null ? "-" : `${results.average}점`}</strong>
+        제출 학생 {results.rows.length}명 · 평균 <strong>{results.average}점</strong>
       </p>
-      <p className="muted small">같은 이름으로 다시 풀면 가장 최근 결과만 남고, 평균도 그 결과로 계산합니다.</p>
-      {results.rows.length === 0 ? (
-        <p className="notice">아직 이 문제지를 푼 학생이 없습니다.</p>
-      ) : (
-        <div className="table-wrap">
-          <table className="table">
-            <thead>
-              <tr>
-                <th>학생 이름</th>
-                <th>점수</th>
-                <th>틀린 문제</th>
-                <th>완료 시각</th>
+      <p className="muted small">
+        평균은 최종 제출한 학생들의 점수 합계 ÷ 제출 학생 수입니다. 같은 이름으로 다시 풀면 가장 최근 결과 하나만 들어갑니다.
+      </p>
+      <div className="table-wrap">
+        <table className="table">
+          <thead>
+            <tr>
+              <th>학생 이름</th>
+              <th>점수</th>
+              <th>틀린 문항</th>
+            </tr>
+          </thead>
+          <tbody>
+            {results.rows.map((r) => (
+              <tr key={r.studentName}>
+                <td>{r.studentName}</td>
+                <td>{r.score}점</td>
+                <td>
+                  {r.wrong.length === 0 ? (
+                    "없음"
+                  ) : (
+                    <ul className="wrong-list">
+                      {r.wrong.map((w) => (
+                        <li key={w.number}>
+                          <strong>{w.number}번</strong> {w.question ?? <span className="muted">(문항 정보를 찾을 수 없음)</span>}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {results.rows.map((r) => (
-                <tr key={r.studentName}>
-                  <td>{r.studentName}</td>
-                  <td>
-                    {r.score}점{" "}
-                    <span className="muted small">
-                      ({r.correctCount}/{r.total})
-                    </span>
-                  </td>
-                  <td>{r.wrongQuestions.length === 0 ? "없음" : r.wrongQuestions.map((n) => `${n}번`).join(", ")}</td>
-                  <td className="muted small">{timeText(r.completedAt)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-      <div className="nav">
-        <button type="button" className="button small" onClick={() => setReload((n) => n + 1)}>
-          결과 새로고침
-        </button>
+            ))}
+          </tbody>
+        </table>
       </div>
+      <ReloadButton onClick={() => setReload((n) => n + 1)} />
+    </div>
+  );
+}
+
+function ReloadButton({ onClick }: { onClick: () => void }) {
+  return (
+    <div className="nav">
+      <button type="button" className="button small" onClick={onClick}>
+        결과 새로고침
+      </button>
     </div>
   );
 }
